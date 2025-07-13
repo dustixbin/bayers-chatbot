@@ -15,7 +15,7 @@ from pydantic import BaseModel
 import json
 import os
 from starlette.concurrency import run_in_threadpool
-
+from helpers.webpage_parser import extract_webpage
 
 load_dotenv(".env_pgvector")
 
@@ -69,6 +69,25 @@ def get_all_pdfs(session: Session = Depends(get_session)):
     all_pdfs = all_pdfs.scalars().all()
     return [PDFS(pdf_file_name = pdf.pdf_file_name, pdf_uuid=pdf.pdf_uuid) for pdf in all_pdfs]
 
+
+@app.post("/upload_webpage", tags=["webpage"])
+async def upload_webpage(url: str, session: Session = Depends(get_session)):
+    data = extract_webpage(url)
+    tmp_id = "".join(str(uuid.uuid4()).split("-"))
+    docs = text_n_images(data, tmp_id, session)
+    obj = Retriver(document_id=tmp_id)
+    storage_context = StorageContext.from_defaults(vector_store=obj.vector_store)
+    VectorStoreIndex.from_documents(
+        docs,
+        embed_model=obj.embedding_model,
+        vector_store=obj.vector_store,
+        storage_context=storage_context,
+        show_progress=True
+    )
+    pdf = PDFS(pdf_file_name=url, pdf_uuid=tmp_id)
+    session.add(pdf)
+    session.commit()
+    return {"url": url, "file_uuid": tmp_id}
 
 @app.delete("/delete_pdf/{pdf_uuid}", tags=["pdf"])
 def delete_pdf(pdf_uuid: str, session: Session = Depends(get_session)):
