@@ -1,0 +1,17 @@
+ 
+name : docker_containers
+on: push
+env:
+  DOCKER_USERNAME: ${{vars.DOCKER_NAME}}
+  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+jobs:
+  build-using-docker:
+   runs-on: ubuntu-latest
+   steps:
+        - name: Checkout code
+          uses: actions/checkout@v4.2.2
+        - name: docker build image
+          run : docker build -t my_image .
+        
+ 
+ 
