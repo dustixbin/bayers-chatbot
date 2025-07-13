@@ -15,8 +15,9 @@ from pydantic import BaseModel
 import json
 import os
 from starlette.concurrency import run_in_threadpool
-from helpers.webpage_parser import extract_webpage
-
+from helpers.webparse import extract_webpage
+from helpers.chunker import text_n_images
+from llama_index.core import StorageContext, VectorStoreIndex
 load_dotenv(".env_pgvector")
 
 class RAGRequest(BaseModel):

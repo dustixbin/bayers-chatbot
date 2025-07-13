@@ -28,6 +28,8 @@ def text_n_images(data, document_id,session :Session):
         # print(images)
         # for chunk in chunks:
         for img in images:
+            if not img.get("base64"):
+                continue
             msg = ChatMessage("Please capture every detail in the image and describe in atmost 200 words. It should be concise and should contain the semantic meaning of the image")
             image_bytes = base64.b64decode(img['base64'])  # decode base64 to bytes
             detected_type = "jpg"
